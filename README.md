@@ -27,3 +27,12 @@ You'll need two network cards on your Linux PC. One connected to the internet (e
  
  
  
+## How to install it on Kali Linux (or Debian distribution)
+It's very simple  
+```
+cd /opt
+sudo git clone https://github.com/dokDork/AP-geteway.git
+cd AP-gateway 
+chmod 755 AP-gateway.sh 
+./AP-gateway.sh 
+```
