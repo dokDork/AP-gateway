@@ -20,38 +20,61 @@ function show_usage {
 
 # Check if all parameters are provided
 if [ -z "$AP_NAME" ] || [ -z "$iIN" ] || [ -z "$iOUT" ]; then
-    echo "\n[i] Error: Missing required parameters."
+    echo -e "\n[i] Error: Missing required parameters."
     show_usage
     exit 1
 fi
 
-echo "\n[i] Starting AP setup with:"
+echo -e "\n[i] Starting AP setup with:"
 echo "  AP name: $AP_NAME"
 echo "  Input interface: $iIN"
 echo "  Output interface: $iOUT"
 
+
+# Check if dnsmasq is running
+echo -e "\n[i]Checking if dnsmasq is running..."
+if pgrep dnsmasq > /dev/null; then
+    echo "dnsmasq is running. Stopping dnsmasq..."
+    sudo systemctl stop dnsmasq
+    echo "dnsmasq stopped."
+else
+    echo "dnsmasq is not running."
+fi
+
+echo ""
+
+# Check if hostapd is running
+echo -e "\n[i] Checking if hostapd is running..."
+if pgrep hostapd > /dev/null; then
+    echo "hostapd is running. Stopping hostapd..."
+    sudo systemctl stop hostapd
+    echo "hostapd stopped."
+else
+    echo "hostapd is not running."
+fi
+
 # 1. Install necessary packages if not installed
-echo "\n[i] Checking and installing required packages..."
+echo -e "\n[i] Checking and installing required packages..."
 dpkg -s hostapd dnsmasq &> /dev/null
 if [ $? -ne 0 ]; then
     sudo apt update
     sudo apt install -y hostapd dnsmasq
 else
-    echo "\n[i] hostapd and dnsmasq are already installed."
+    echo -e "\n[i] hostapd and dnsmasq are already installed."
 fi
 
 # 2. Set static IP for input interface
-echo "\n[i] Configuring static IP on interface $iIN..."
+echo -e "\n[i] Configuring static IP on interface $iIN..."
 INTERFACES_FILE="/etc/network/interfaces"
 BACKUP_FILE="/etc/network/interfaces.bak"
 
 if [ -f "$INTERFACES_FILE" ]; then
-    echo "\n[i] Backing up existing $INTERFACES_FILE to $BACKUP_FILE..."
+    echo -e "\n[i] Backing up existing $INTERFACES_FILE to $BACKUP_FILE..."
     sudo rm -f "$BACKUP_FILE"
     sudo mv "$INTERFACES_FILE" "$BACKUP_FILE"
 fi
 
-echo "\n[i] Creating new $INTERFACES_FILE..."
+echo -e "\n[i] Creating new $INTERFACES_FILE..."
 sudo bash -c "cat > $INTERFACES_FILE" <<EOL
 auto $iIN
 iface $iIN inet static
@@ -60,7 +83,7 @@ iface $iIN inet static
 EOL
 
 # 3. Disable NetworkManager control of interfaces
-echo "\n[i] Configuring NetworkManager..."
+echo -e "\n[i] Configuring NetworkManager..."
 NM_CONF="/etc/NetworkManager/NetworkManager.conf"
 if [ -f "$NM_CONF" ]; then
     sudo sed -i '/^\[ifupdown\]/,${s/managed=.*/managed=false/}' "$NM_CONF"
@@ -70,7 +93,7 @@ else
 fi
 
 # 4. Create hostapd configuration file
-echo "\n[i] Configuring hostapd..."
+echo -e "\n[i] Configuring hostapd..."
 HOSTAPD_CONF="/etc/hostapd/hostapd.conf"
 HOSTAPD_BAK="/etc/hostapd/hostapd.conf.bak"
 if [ -f "$HOSTAPD_CONF" ]; then
@@ -102,7 +125,7 @@ macaddr_acl=0
 EOL
 
 # 5. Create dnsmasq configuration file
-echo "\n[i] Configuring dnsmasq..."
+echo -e "\n[i] Configuring dnsmasq..."
 DNSMASQ_CONF="/etc/dnsmasq.conf"
 DNSMASQ_BAK="/etc/dnsmasq.conf.bak"
 if [ -f "$DNSMASQ_CONF" ]; then
@@ -123,38 +146,41 @@ dhcp-option=6,8.8.8.8,8.8.4.4  # DNS servers (Google DNS)
 EOL
 
 # 6. Restart networking services
-echo "\n[i] Restarting networking services..."
+echo -e "\n[i] Restarting networking services..."
 sudo systemctl restart NetworkManager
 sudo systemctl restart networking
 
 # 7. Enable IP forwarding
-echo "\n[i] Enabling IP forwarding..."
+echo -e "\n[i] Enabling IP forwarding..."
 sudo sysctl -w net.ipv4.ip_forward=1
 sudo sysctl -w net.ipv6.conf.all.forwarding=1
 sudo sysctl -w net.ipv4.conf.all.send_redirects=0
 
 # 8. Configure iptables for traffic forwarding and NAT
-echo "\n[i] IPtables backup"
+echo -e "\n[i] IPtables backup"
 sudo iptables-save > ~/iptables-backup-$(date +%F-%T).rules
-echo "\n[i] reset iptables rules"
+echo -e "\n[i] reset iptables rules"
 sudo iptables -F
 sudo iptables -t nat -F
 sudo iptables -t mangle -F
 sudo iptables -X
 sudo iptables -t nat -X
 sudo iptables -t mangle -X
-echo "\n[i] Setting up iptables rules..."
-sudo iptables -t nat -A POSTROUTING -o "$iOUT" -j LOG --log-prefix "HTTP: masquerade"
+echo -e "\n[i] Setting up iptables rules..."
+sudo iptables -t nat -A POSTROUTING -o "$iOUT" -j LOG --log-prefix "Traffic: masquerade"
 sudo iptables -t nat -A POSTROUTING -o "$iOUT" -j MASQUERADE
-sudo iptables -A FORWARD -i "$iOUT" -o "$iIN" -m conntrack --ctstate RELATED,ESTABLISHED -j LOG --log-prefix "HTTP: $iOUT->$iIN"
+sudo iptables -A FORWARD -i "$iOUT" -o "$iIN" -m conntrack --ctstate RELATED,ESTABLISHED -j LOG --log-prefix "Traffic: $iOUT->$iIN"
 sudo iptables -A FORWARD -i "$iOUT" -o "$iIN" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-sudo iptables -A FORWARD -i "$iIN" -o "$iOUT" -j LOG --log-prefix "HTTP: $iIN->$iOUT"
+sudo iptables -A FORWARD -i "$iIN" -o "$iOUT" -j LOG --log-prefix "Traffic: $iIN->$iOUT"
 sudo iptables -A FORWARD -i "$iIN" -o "$iOUT" -j ACCEPT
 
 # 9. Start hostapd and dnsmasq services
-echo "\n[i] Starting hostapd and dnsmasq..."
+echo -e "\n[i] Starting hostapd and dnsmasq..."
+echo "start hostapd"
 sudo hostapd /etc/hostapd/hostapd.conf &
+echo "start dnsmasq"
 sudo dnsmasq -C /etc/dnsmasq.conf &
-sudo systemctl restart hostapd
+echo "restart hostapd"
+# sudo systemctl restart hostapd
 
-echo "\n[i] Access Point setup is complete."
+echo -e "\n[i] Access Point setup is complete."
