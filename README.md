@@ -5,6 +5,18 @@
 ## Description
 The tool activates an access point, on the Linux machine on which it is activated, that works like a gateway thus creating an AP that must be connected to the internet. All traffic passing through the access point can be analyzed or diverted to other proxies, by means of iptables, active on the Linux machine (such as burpSuite, mitmproxy, certmitm, or others).
 
+Once all network traffic from connected clients passes through the gateway AP, it can be analyzed with tools like mitmproxy (in transparent mode) to see the packets in transit. To do this, you'll need to divert the traffic from its original path to the proxy port (e.g., port 8080 for mitmproxy) with the following commands:
+ ```
+# Port forwarding
+sysctl -w net.ipv4.ip_forward=1
+sysctl -w net.ipv6.conf.all.forwarding=1
+# Disable ICMP redirects.
+sysctl -w net.ipv4.conf.all.send_redirects=0
+# Create an iptables ruleset that redirects the desired traffic to mitmproxy:
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 443 -j REDIRECT --to-port 8080
+ ```
+
 
 ## Example Usage
 You'll need two network cards on your Linux PC. One connected to the internet (e.g., eth0 or wlan0) and one Wi-Fi (e.g., wlan1) free to host new connections for the devices you want to connect. At this point, to create the gateway access point, simply use the following command:
