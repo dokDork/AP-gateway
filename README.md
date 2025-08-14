@@ -1,6 +1,6 @@
 # AP-gateway
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)  
-<img src="https://github.com/dokDork/AP-gateway/raw/main/images/AP-gateway.png" width="250" height="250">  
+<img src="https://github.com/dokDork/AP-gateway/raw/main/images/AP.png" width="250" height="250">  
 
 
 ## Description
