@@ -5,21 +5,23 @@
 
 # Request parameters if not provided as arguments
 AP_NAME="$1"
-iIN="$2"
-iOUT="$3"
+PWD="$2"
+iIN="$3"
+iOUT="$4"
 
 # Function to show usage
 function show_usage {
-    echo "Usage: $0 <AP_NAME> <INPUT_INTERFACE> <OUTPUT_INTERFACE>"
-    echo "Example: $0 MyAP wlan0 eth0"
+    echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE>"
+    echo "Example: $0 MyAP MyPass wlan0 eth0"
     echo "Parameters:"
     echo "  AP_NAME          - Name of the Access Point (SSID)"
+    echo "  AP_PASSWORD      - Password of the Access Point"    
     echo "  INPUT_INTERFACE  - Interface to use as AP (e.g., wlan0)"
     echo "  OUTPUT_INTERFACE - Interface for internet access (e.g., eth0)"
 }
 
 # Check if all parameters are provided
-if [ -z "$AP_NAME" ] || [ -z "$iIN" ] || [ -z "$iOUT" ]; then
+if [ -z "$AP_NAME" ] || [ -z "$PWD" ] || [ -z "$iIN" ] || [ -z "$iOUT" ]; then
     echo -e "\n[i] Error: Missing required parameters."
     show_usage
     exit 1
@@ -27,6 +29,7 @@ fi
 
 echo -e "\n[i] Starting AP setup with:"
 echo "  AP name: $AP_NAME"
+echo "  AP password: $PWD"
 echo "  Input interface: $iIN"
 echo "  Output interface: $iOUT"
 
@@ -117,7 +120,7 @@ ht_capab=[HT40-][SHORT-GI-20][SHORT-GI-40]
 # WPA Authentication
 auth_algs=1
 wpa=2
-wpa_passphrase=ForzaParma!
+wpa_passphrase=$PWD
 wpa_key_mgmt=WPA-PSK
 rsn_pairwise=CCMP
 # Don't use a MAC ACL
