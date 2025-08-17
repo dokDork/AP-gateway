@@ -2,7 +2,8 @@
 
 # Script to activate an Access Point (AP) on Kali Linux
 
-
+echo ""
+echo ""
 echo '  /$$$$$$  /$$$$$$$                               /$$     '
 echo ' /$$__  $$| $$__  $$                             | $$     '                                           
 echo '| $$  \ $$| $$  \ $$         /$$$$$$   /$$$$$$  /$$$$$$    /$$$$$$  /$$  /$$  /$$  /$$$$$$  /$$   /$$'
@@ -83,14 +84,15 @@ setup_port_redirect() {
 
 # Function to show usage
 function show_usage {
-    echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE> <REDIRECT>"
+    echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE> [<REDIRECT>]"
     echo "Example: $0 MyAP MyPass wlan0 eth0 80->8080,443->8080"
     echo "Parameters:"
     echo "  AP_NAME          - Name of the Access Point (SSID)"
     echo "  AP_PASSWORD      - Password of the Access Point"    
     echo "  INPUT_INTERFACE  - Interface to use as AP (e.g., wlan0)"
     echo "  OUTPUT_INTERFACE - Interface for internet access (e.g., eth0)"
-    echo "  REDIRECT         - Redirect a destination port to a local port on which a transparent proxy is listening. This parameter is optional. If used it shoud respect this synthax: [destination port]->[local port to be redirect],[destination port]->[local port to be redirect],..."
+    echo "  REDIRECT         - Optional. Redirect a destination port to a local port on which a transparent proxy is listening. This parameter is optional."
+    echo "                     If used it shoud respect this synthax: [destination port]->[local port to be redirect],[destination port]->[local port to be redirect],..."
 }
 
 # Check if all parameters are provided
