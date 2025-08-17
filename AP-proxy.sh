@@ -1,23 +1,81 @@
 #!/bin/bash
 
 # Script to activate an Access Point (AP) on Kali Linux
-# Requires three parameters: AP name, input interface, and output interface
+
 
 # Request parameters if not provided as arguments
 AP_NAME="$1"
 PWD="$2"
 iIN="$3"
 iOUT="$4"
+REDIRECT="$5"
+
+
+# Example function call
+# setup_port_redirect "80->8080,443->8080" wlan0 lo
+setup_port_redirect() {
+  local port_mappings="$1"
+  local INTERFACE_IN="$2"
+  local INTERFACE_OUT="$3"
+
+  if [ -z "$port_mappings" ]; then
+    # No parameter, do nothing
+    return 0
+  fi
+
+  local LOG_PREFIX_FORWARD="AP: ${INTERFACE_IN}->${INTERFACE_OUT}"
+
+
+
+  # 2) For each port mapping, add LOG and REDIRECT rules to nat PREROUTING table
+  IFS=',' read -ra pairs <<< "$port_mappings"
+
+  for pair in "${pairs[@]}"; do
+    if [[ "$pair" == *"->"* ]]; then
+      local port_dest=$(echo "$pair" | awk -F'->' '{print $1}')
+      local port_redirect=$(echo "$pair" | awk -F'->' '{print $2}')
+
+      local log_prefix="AP: redirect port dest:${port_dest}->lo:${port_redirect}"
+
+      local rule_log_nat="-i $INTERFACE_IN -p tcp --dport $port_dest -j LOG --log-prefix \"$log_prefix\""
+      local rule_redirect_nat="-i $INTERFACE_IN -p tcp --dport $port_dest -j REDIRECT --to-port $port_redirect"
+
+      if ! sudo iptables-save -t nat | grep -F -- "$rule_log_nat" >/dev/null 2>&1; then
+        echo "Adding LOG rule to nat PREROUTING for port $port_dest redirecting to $port_redirect"
+        echo "--> sudo iptables -t nat -A PREROUTING -i $INTERFACE_IN -p tcp --dport $port_dest -j LOG --log-prefix $log_prefix"
+        sudo iptables -t nat -A PREROUTING -i "$INTERFACE_IN" -p tcp --dport "$port_dest" -j LOG --log-prefix ""$log_prefix""
+      else
+        echo "LOG rule for port $port_dest already exists, skipping"
+      fi
+
+      if ! sudo iptables-save -t nat | grep -F -- "$rule_redirect_nat" >/dev/null 2>&1; then
+        echo "Adding REDIRECT rule to nat PREROUTING from port $port_dest to $port_redirect"
+        echo "--> sudo iptables -t nat -A PREROUTING -i $INTERFACE_IN -p tcp --dport $port_dest -j REDIRECT --to-port $port_redirect"
+        sudo iptables -t nat -A PREROUTING -i "$INTERFACE_IN" -p tcp --dport "$port_dest" -j REDIRECT --to-port "$port_redirect"
+      else
+        echo "REDIRECT rule for port $port_dest already exists, skipping"
+      fi
+
+    else
+      echo "Invalid pair format: '$pair' (expected port->port)"
+    fi
+  done
+}
+
+
+
+
 
 # Function to show usage
 function show_usage {
-    echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE>"
-    echo "Example: $0 MyAP MyPass wlan0 eth0"
+    echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE> <REDIRECT>"
+    echo "Example: $0 MyAP MyPass wlan0 eth0 80->8080,443->8080"
     echo "Parameters:"
     echo "  AP_NAME          - Name of the Access Point (SSID)"
     echo "  AP_PASSWORD      - Password of the Access Point"    
     echo "  INPUT_INTERFACE  - Interface to use as AP (e.g., wlan0)"
     echo "  OUTPUT_INTERFACE - Interface for internet access (e.g., eth0)"
+    echo "  REDIRECT         - Redirect a destination port to a local port on which a transparent proxy is listening. This parameter is optional. If used it shoud respect this synthax: [destination port]->[local port to be redirect],[destination port]->[local port to be redirect],..."
 }
 
 # Check if all parameters are provided
@@ -32,6 +90,7 @@ echo "  AP name: $AP_NAME"
 echo "  AP password: $PWD"
 echo "  Input interface: $iIN"
 echo "  Output interface: $iOUT"
+echo "  Redirect port: $REDIRECT"
 
 
 # Check if dnsmasq is running
@@ -170,14 +229,23 @@ sudo iptables -X
 sudo iptables -t nat -X
 sudo iptables -t mangle -X
 echo -e "\n[i] Setting up iptables rules..."
-sudo iptables -t nat -A POSTROUTING -o "$iOUT" -j LOG --log-prefix "Traffic: masquerade"
+sudo iptables -t nat -A POSTROUTING -o "$iOUT" -j LOG --log-prefix "AP: masquerade"
 sudo iptables -t nat -A POSTROUTING -o "$iOUT" -j MASQUERADE
-sudo iptables -A FORWARD -i "$iOUT" -o "$iIN" -m conntrack --ctstate RELATED,ESTABLISHED -j LOG --log-prefix "Traffic: $iOUT->$iIN"
+sudo iptables -A FORWARD -i "$iOUT" -o "$iIN" -m conntrack --ctstate RELATED,ESTABLISHED -j LOG --log-prefix "AP: $iOUT->$iIN"
 sudo iptables -A FORWARD -i "$iOUT" -o "$iIN" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-sudo iptables -A FORWARD -i "$iIN" -o "$iOUT" -j LOG --log-prefix "Traffic: $iIN->$iOUT"
+sudo iptables -A FORWARD -i "$iIN" -o "$iOUT" -j LOG --log-prefix "AP: $iIN->$iOUT"
 sudo iptables -A FORWARD -i "$iIN" -o "$iOUT" -j ACCEPT
 
-# 9. Start hostapd and dnsmasq services
+
+# 9. Activate Port Redirection
+if [ -n "$REDIRECT" ]; then
+  echo -e "\n[i] Port Redirection is defined: $REDIRECT"
+  setup_port_redirect "$REDIRECT" "$iIN" lo
+else
+  echo -e "\n[i] Port Redirection is NOT defined, skipping redirect function"
+fi
+
+# 10. Start hostapd and dnsmasq services
 echo -e "\n[i] Starting hostapd and dnsmasq..."
 echo "start hostapd"
 sudo hostapd /etc/hostapd/hostapd.conf &
