@@ -47,6 +47,14 @@ cleanup_all() {
         sudo kill $pids >/dev/null 2>&1 || true
     fi
 
+    echo "[i] Removing any 'address=' entries from /etc/dnsmasq.conf..."
+    if sudo grep -q '^address=' /etc/dnsmasq.conf 2>/dev/null; then
+        sudo sed -i '/^address=/d' /etc/dnsmasq.conf
+        echo "[i] Removed all address= overrides from dnsmasq.conf"
+    else
+        echo "[i] No address= entries found"
+    fi
+
     echo "[i] Flushing iptables rules..."
     # flush all standard tables
     sudo iptables --flush || echo "[!] iptables --flush failed"
@@ -228,6 +236,16 @@ if [ -z "$AP_NAME" ] || [ -z "$PWD" ] || [ -z "$iIN" ] || [ -z "$iOUT" ] || [ -z
     show_usage
     exit 1
 fi
+# If REDIRECT = - Then REDIRECT=""
+if [[ "$REDIRECT" == "-" ]]; then
+    REDIRECT=""
+fi
+# If DNS_RESOLVE = - Then DNS_RESOLVE=""
+if [[ "$DNS_RESOLVE" == "-" ]]; then
+    DNS_RESOLVE=""
+fi
+
+
 
 echo -e "\n[i] Starting AP setup with:"
 echo "  AP name: $AP_NAME"
