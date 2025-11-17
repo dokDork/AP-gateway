@@ -23,12 +23,12 @@ The iptables rules can be automatically created with the last parameter passed t
 ## Example Usage
 You'll need two network cards on your Linux PC. One connected to the internet (e.g., eth0 or wlan0) and one Wi-Fi (e.g., wlan1) free to host new connections for the devices you want to connect. At this point, to create the gateway access point, simply use the following command:
  ```
-./AP-gateway MyAPName MyAPpassword wlan1 wlan0 "443->8080,80->8080"
+./AP-gateway MyAPName MyAPpassword wlan1 wlan0 "443->8080,80->8080" "www.example.org->192.168.1.11,example.org->192.168.1.11"
  ```
    
 ## Command-line parameters
 ```
-./AP-gateway MyAPName MyAPpassword wlan1 wlan0
+./AP-gateway MyAPName MyAPpassword wlan1 wlan0 redirect-port DNS-resolution
 ```
 
 | Parameter | Description                          | Example       |
@@ -37,7 +37,8 @@ You'll need two network cards on your Linux PC. One connected to the internet (e
 | `MyAPpassword`      | The password of the Access Point that should be activate          | `password123`          |
 | `wlan1`      | Interface to use as AP (e.g., wlan1)         | `wlan1`          |
 | `wlan0`      | Interface for internet access       | `wlan0`, `eth0`          |
-| `443->8080,80->8080"`      | Define which destination port shoud be redirect to a local port on which a proxy should be activated | `wlan0`, `eth0`          |
+| `redirect-port`      | Define which destination port shoud be redirect to a local port on which a proxy should be activated | `443->8080,80->8080`          |
+| `DNS-resolution`      | Define which host/domain shoukd be resolved with a specific IP by means of local DNS | `www.example.org->192.168.1.11,example.org->192.168.1.11`          |
  
  
 ## How to install it on Kali Linux (or Debian distribution)
