@@ -142,7 +142,8 @@ else
     echo -e "\n[i] hostapd and dnsmasq are already installed."
 fi
 
-# 2. Set static IP for input interface
+# 2. SET INTERFACE !P/NETMASK
+#    Set static IP for input interface
 echo -e "\n[i] Configuring static IP on interface $iIN..."
 INTERFACES_FILE="/etc/network/interfaces"
 BACKUP_FILE="/etc/network/interfaces.bak"
@@ -161,7 +162,9 @@ iface $iIN inet static
     netmask 255.255.255.0
 EOL
 
-# 3. Disable NetworkManager control of interfaces
+# 3. NETWORKMANAGER: 
+#    Disable NetworkManager control of interfaces
+#    set managed=false in NetworkManager.conf
 echo -e "\n[i] Configuring NetworkManager..."
 NM_CONF="/etc/NetworkManager/NetworkManager.conf"
 if [ -f "$NM_CONF" ]; then
@@ -171,7 +174,8 @@ else
     echo "managed=false" | sudo tee -a "$NM_CONF" > /dev/null
 fi
 
-# 4. Create hostapd configuration file
+# 4. CONFIGURE AP: 
+#    Create hostapd configuration file
 echo -e "\n[i] Configuring hostapd..."
 HOSTAPD_CONF="/etc/hostapd/hostapd.conf"
 HOSTAPD_BAK="/etc/hostapd/hostapd.conf.bak"
@@ -203,7 +207,8 @@ rsn_pairwise=CCMP
 macaddr_acl=0
 EOL
 
-# 5. Create dnsmasq configuration file
+# 5. CONFIGURE DHCP and DNS: 
+#    Create dnsmasq configuration file
 echo -e "\n[i] Configuring dnsmasq..."
 DNSMASQ_CONF="/etc/dnsmasq.conf"
 DNSMASQ_BAK="/etc/dnsmasq.conf.bak"
@@ -220,6 +225,9 @@ dhcp-range=192.168.10.50,192.168.10.150,12h  # DHCP range for clients
 dhcp-option=3,192.168.10.1  # Default gateway for clients
 # DNS
 dhcp-option=6,8.8.8.8,8.8.4.4  # DNS servers (Google DNS)
+# custom host resolution
+# address=/www.example.org/192.168.1.10
+# address=/example.org/192.168.1.10
 # Optional proxy activation (clients may not accept proxy)
 # dhcp-option=252,"http://192.168.10.1/proxy.pac"  # URL of PAC file
 EOL
