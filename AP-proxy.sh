@@ -165,6 +165,10 @@ function show_usage {
     echo "  INPUT_INTERFACE  - Interface to use as AP (e.g., wlan0)"
     echo "  OUTPUT_INTERFACE - Interface for internet access (e.g., eth0)"
     echo "  REDIRECT         - Optional. Redirect a destination port to a local port on which a transparent proxy is listening."
+    echo ""
+    echo "Example:"
+    echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"80->8080,443->8080\""
+
 }
 
 # Check if all parameters are provided
