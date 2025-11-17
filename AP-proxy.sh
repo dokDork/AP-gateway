@@ -3,6 +3,7 @@
 set -euo pipefail
 
 ### 0. SIGNAL HANDLERS
+#      ctrl+x e ctrl+c stop services and restore the situation to before the program started
 cleanup_all() {
     echo -e "\n[!] Cleanup started due to user interrupt..."
 
