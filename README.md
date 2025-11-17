@@ -28,7 +28,7 @@ You'll need two network cards on your Linux PC. One connected to the internet (e
    
 ## Command-line parameters
 ```
-./AP-gateway MyAPName MyAPpassword wlan1 wlan0 redirect-port DNS-resolution
+sudo ./AP-gateway MyAPName MyAPpassword wlan1 wlan0 redirect-port DNS-resolution
 ```
 
 | Parameter | Description                          | Example       |
