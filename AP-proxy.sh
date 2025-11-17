@@ -158,14 +158,15 @@ setup_port_redirect() {
 
 # Function to show usage
 function show_usage {
-    echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE> [<REDIRECT>]"
+    echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE> <REDIRECT>"
     echo "Example: $0 MyAP MyPass wlan0 eth0 80->8080,443->8080"
     echo "Parameters:"
     echo "  AP_NAME          - Name of the Access Point (SSID)"
     echo "  AP_PASSWORD      - Password of the Access Point"
     echo "  INPUT_INTERFACE  - Interface to use as AP (e.g., wlan0)"
     echo "  OUTPUT_INTERFACE - Interface for internet access (e.g., eth0)"
-    echo "  REDIRECT         - Optional. Redirect a destination port to a local port on which a transparent proxy is listening."
+    echo "  REDIRECT         - Redirect a destination port to a local port on which a transparent proxy is listening."
+    echo "                     If redirections are not needed then this parameter should be entered as an empty string"
     echo ""
     echo "Example:"
     echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"80->8080,443->8080\""
@@ -173,7 +174,7 @@ function show_usage {
 }
 
 # Check if all parameters are provided
-if [ -z "$AP_NAME" ] || [ -z "$PWD" ] || [ -z "$iIN" ] || [ -z "$iOUT" ]; then
+if [ -z "$AP_NAME" ] || [ -z "$PWD" ] || [ -z "$iIN" ] || [ -z "$iOUT" ] || [ -z "$REDIRECT" ]; then
     echo -e "\n[i] Error: Missing required parameters."
     show_usage
     exit 1
