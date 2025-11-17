@@ -109,6 +109,7 @@ PWD="${2:-}"
 iIN="${3:-}"
 iOUT="${4:-}"
 REDIRECT="${5:-}"
+DNS_RESOLVE="${6:-}"
 
 # Example function call
 # setup_port_redirect "80->8080,443->8080" wlan0 lo
@@ -158,7 +159,7 @@ setup_port_redirect() {
 
 # Function to show usage
 function show_usage {
-    echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE> <REDIRECT>"
+    echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE> <REDIRECT> <DNS-RESOLVE>"
     echo "Example: $0 MyAP MyPass wlan0 eth0 80->8080,443->8080"
     echo "Parameters:"
     echo "  AP_NAME          - Name of the Access Point (SSID)"
@@ -170,14 +171,15 @@ function show_usage {
     echo "                     If redirections are not needed then this parameter should be entered as an empty string"
     echo "  DNS_RESOLVE      - I can define the IP address that resolves to a given host or domain."
     echo "                     To do this, simply define the list of hosts/domains to resolve in the following format: \"<host/domain>-><IP>,<host/domain>-><IP>\"."
+    echo "                     If DNS resolution is not needed then this parameter should be entered as an empty string."
     echo ""
     echo "Example:"
-    echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"80->8080,443->8080\" \"www.example.org->192.168.1.11,example.org->192.168.1.11\"
+    echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"80->8080,443->8080\" \"www.example.org->192.168.1.11,example.org->192.168.1.11\""
 
 }
 
 # Check if all parameters are provided
-if [ -z "$AP_NAME" ] || [ -z "$PWD" ] || [ -z "$iIN" ] || [ -z "$iOUT" ] || [ -z "$REDIRECT" ]; then
+if [ -z "$AP_NAME" ] || [ -z "$PWD" ] || [ -z "$iIN" ] || [ -z "$iOUT" ] || [ -z "$REDIRECT" ] || [ -z "$DNS_RESOLVE" ]; then
     echo -e "\n[i] Error: Missing required parameters."
     show_usage
     exit 1
@@ -189,6 +191,7 @@ echo "  AP password: $PWD"
 echo "  Input interface: $iIN"
 echo "  Output interface: $iOUT"
 echo "  Redirect port: $REDIRECT"
+echo "  DNS resolution: $DNS_RESOLVE"
 
 # Check if dnsmasq is running
 echo -e "\n[i]Checking if dnsmasq is running..."
@@ -342,6 +345,16 @@ if [ -n "$REDIRECT" ]; then
 else
   echo -e "\n[i] Port Redirection is NOT defined, skipping redirect function"
 fi
+
+# 9a. DNS Resolution
+if [ -n "$DNS_RESOLVE" ]; then
+  echo -e "\n[i] DNS Resoltion is defined: $DNS_RESOLVE"
+  setup_dns_resolution "$DNS_RESOLVE"
+else
+  echo -e "\n[i] DNS Resolution is NOT defined, skipping DNS function"
+fi
+
+
 
 # 10. Start hostapd and dnsmasq services (in background)
 echo -e "\n[i] Starting hostapd and dnsmasq..."
