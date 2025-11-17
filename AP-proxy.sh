@@ -157,6 +157,50 @@ setup_port_redirect() {
   done
 }
 
+
+setup_dns_resolution() {
+    local dns_entries="$1"
+    local DNSMASQ_CONF="/etc/dnsmasq.conf"
+
+    if [ -z "$dns_entries" ]; then
+        echo "[i] No DNS resolution entries provided."
+        return 0
+    fi
+
+    echo -e "\n[i] Processing DNS resolution entries..."
+
+    IFS=',' read -ra pairs <<< "$dns_entries"
+
+    for pair in "${pairs[@]}"; do
+        if [[ "$pair" == *"->"* ]]; then
+            local host=$(echo "$pair" | awk -F'->' '{print $1}')
+            local ip=$(echo "$pair" | awk -F'->' '{print $2}')
+
+            # Syntax check
+            if [[ -z "$host" || -z "$ip" ]]; then
+                echo "[!] Invalid DNS resolve entry: '$pair' — skipping"
+                continue
+            fi
+
+            local entry="address=/$host/$ip"
+
+            # Avoid duplicates
+            if ! sudo grep -Fx "$entry" "$DNSMASQ_CONF" >/dev/null 2>&1; then
+                echo "[i] Adding DNS override: $host -> $ip"
+                echo "$entry" | sudo tee -a "$DNSMASQ_CONF" >/dev/null
+            else
+                echo "[i] DNS override for $host already exists, skipping"
+            fi
+        else
+            echo "[!] Invalid pair format: '$pair' (expected host->ip)"
+        fi
+    done
+
+    echo "[i] Restarting dnsmasq to apply DNS resolution rules..."
+    sudo systemctl restart dnsmasq || echo "[!] Warning: dnsmasq restart failed"
+}
+
+
 # Function to show usage
 function show_usage {
     echo "Usage: $0 <AP_NAME> <AP_PASSWORD> <INPUT_INTERFACE> <OUTPUT_INTERFACE> <REDIRECT> <DNS-RESOLVE>"
