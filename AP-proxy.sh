@@ -226,9 +226,9 @@ function show_usage {
     echo "                     If this parameter is not needed, it will still be necessary to enter at least one -"
     echo ""
     echo "Example:"
-    echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"80->8080,443->8080\" \"www.example.org->192.168.1.11,example.org->192.168.1.11\""
-    echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"-\" \"www.example.org->192.168.1.11,example.org->192.168.1.11\""
-    echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"-\" \"-\""
+    echo "sudo $0 myAP mySuperSecretPassword wlan0 eth0 \"80->8080,443->8080\" \"www.example.org->192.168.1.11,example.org->192.168.1.11\""
+    echo "sudo $0 myAP mySuperSecretPassword wlan0 eth0 \"-\" \"www.example.org->192.168.1.11,example.org->192.168.1.11\""
+    echo "sudo $0 myAP mySuperSecretPassword wlan0 eth0 \"-\" \"-\""
 
 }
 
