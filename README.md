@@ -23,7 +23,7 @@ The iptables rules can be automatically created with the last parameter passed t
 ## Example Usage
 You'll need two network cards on your Linux PC. One connected to the internet (e.g., eth0 or wlan0) and one Wi-Fi (e.g., wlan1) free to host new connections for the devices you want to connect. At this point, to create the gateway access point, simply use the following command:
  ```
-./AP-gateway MyAPName MyAPpassword wlan1 wlan0 "443->8080,80->8080" "www.example.org->192.168.1.11,example.org->192.168.1.11"
+sudo ./AP-gateway MyAPName MyAPpassword wlan1 wlan0 "443->8080,80->8080" "www.example.org->192.168.1.11,example.org->192.168.1.11"
  ```
    
 ## Command-line parameters
