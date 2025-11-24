@@ -227,6 +227,8 @@ function show_usage {
     echo ""
     echo "Example:"
     echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"80->8080,443->8080\" \"www.example.org->192.168.1.11,example.org->192.168.1.11\""
+    echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"-\" \"www.example.org->192.168.1.11,example.org->192.168.1.11\""
+    echo "$0 myAP mySuperSecretPassword wlan0 eth0 \"-\" \"-\""
 
 }
 
