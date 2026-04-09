@@ -2,6 +2,11 @@
 [![License](https://img.shields.io/badge/license-MIT-_red.svg)](https://opensource.org/licenses/MIT)  
 <img src="https://github.com/dokDork/AP-gateway/raw/main/images/AP.png" width="250" height="250">  
 
+## Disclaimer
+This tool is provided for authorized security testing, research, and educational purposes only.
+If you use this tool for any activity involving attacks, exploitation, or security testing against individuals, companies, systems, or networks, you must have explicit prior authorization from the relevant person, organization, or asset owner.
+
+Unauthorized use is strictly prohibited. The author assumes no responsibility for any misuse or damage caused by this tool.
 
 ## Description
 The tool activates an access point, on the Linux machine on which it is activated, that works like a gateway thus creating an AP that must be connected to the internet. All traffic passing through the access point can be analyzed or diverted to other proxies, by means of iptables, active on the Linux machine (such as burpSuite, mitmproxy, certmitm, or others).
