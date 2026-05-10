@@ -395,6 +395,7 @@ sudo iptables -X || true
 sudo iptables -t nat -X || true
 sudo iptables -t mangle -X || true
 echo -e "\n[i] Setting up iptables rules..."
+sudo iptables -P FORWARD ACCEPT
 sudo iptables -t nat -A POSTROUTING -o "$iOUT" -j LOG --log-prefix "AP: masquerade" || true
 sudo iptables -t nat -A POSTROUTING -o "$iOUT" -j MASQUERADE || true
 sudo iptables -A FORWARD -i "$iOUT" -o "$iIN" -m conntrack --ctstate RELATED,ESTABLISHED -j LOG --log-prefix "AP: $iOUT->$iIN" || true
