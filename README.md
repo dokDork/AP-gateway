@@ -41,7 +41,7 @@ sudo ./AP-gateway MyAPName MyAPpassword wlan1 wlan0 redirect-port DNS-resolution
 | `MyAPName`      | The name of the Access Point that should be activate | `SuperSecureAP`, `LetMeIn`, `HelloWorld`, ... |
 | `MyAPpassword`      | The password of the Access Point that should be activate          | `password123`          |
 | `wlan1`      | interface on which the access point is activated         | `wlan1`          |
-| `wlan0`      | Interface for internet access       | `wlan0`, `eth0`          |
+| `wlan0`      | interface that connects Kali to the internet       | `wlan0`, `eth0`          |
 | `redirect-port`      | Define which destination port shoud be redirect to a local port on which a proxy should be activated | `443->8080,80->8080`,`-`          |
 | `DNS-resolution`      | Define which host/domain shoukd be resolved with a specific IP by means of local DNS | `www.example.org->192.168.1.11,example.org->192.168.1.11`,`-`          |
  
